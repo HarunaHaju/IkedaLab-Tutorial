@@ -1,9 +1,9 @@
-import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 import math
 
-ITER_NUM = 3000
+ITER_NUM = 1000
+TEST_NUM = 10
 
 # Define the data
 # y = sin(x) + noise
@@ -57,50 +57,27 @@ if __name__ == '__main__':
     # initialize
     sess.run(init)
 
-    # plot the data
-    fig = plt.figure()
-    ax = fig.add_subplot(2, 1, 1)
-    ax.scatter(x_data, y_data)
-
-    # plot the loss
-    loss_fig = fig.add_subplot(2, 1, 2)
-    loss_fig.set_title("Loss")
-
-    # interactive mode on, could dynamic refresh the picture
-    plt.ion()
-    plt.show()
-
-    # define the loss history
-    loss_history = []
-
     for i in range(ITER_NUM):
         # training
         _, loss = sess.run([optimal, loss_function], feed_dict={x_input: x_data, y_true: y_data})
 
-        # add loss to history
-        loss_history.append(loss)
-
         # output the training details
-        print('Epoch {0}: {1}'.format(i, loss))
+        print('Training Epoch {0}, loss: {1}'.format(i, loss))
 
-        if i % 10 == 0:
-            try:
-                ax.lines.remove(lines[0])
-            except Exception:
-                pass
+    # test
+    print("-------------------------------------------------")
+    print("test_epoch \t x \t y_true \t y_predict \t delta_y")
+    for i in range(TEST_NUM):
 
-            # get the prediction value
-            prediction_value = sess.run(prediction, feed_dict={x_input: x_data})
+        # random get a index
+        index = np.random.randint(0, len(y_data))
 
-            # plot the prediction value
-            lines = ax.plot(x_data, prediction_value, 'r-', lw=5)
-            ax.set_title("Fitting Result at Step:"+str(i))
+        # get data by index
+        x = x_data[index]
+        y = y_data[index]
 
-            # plot the loss
-            loss_fig.plot(np.arange(len(loss_history)), loss_history, 'r-')
+        # predict from network
+        y_predict = sess.run(prediction, feed_dict={x_input: np.array([x])})[0]
+        print(str(i) + " \t" + str(x) + " \t" + str(y) + " \t" + str(y_predict) + " \t" + str(y_predict - y))
 
-            plt.pause(0.05)
 
-    # close interactive mode
-    plt.ioff()
-    plt.show()
